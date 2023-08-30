@@ -4,7 +4,7 @@
 #include <sys/time.h>
 #include <cuda_runtime.h>
 
-#define dtSquared 0.00004999999700376976f // delta t
+#define dtSquared 0.0000499f // delta t
 #define dxSquared 225.0f // delta x
 #define dySquared 225.0f // delta y
 #define V 1500.0f // wave velocity v = 1500 m/s
