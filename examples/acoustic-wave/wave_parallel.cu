@@ -4,6 +4,7 @@
 #include <sys/time.h>
 #include <cuda_runtime.h>
 
+#define DT 0.0070710676f // delta t
 #define dtSquared 0.0000499f // delta t
 #define dxSquared 225.0f // delta x
 #define dySquared 225.0f // delta y
@@ -80,9 +81,9 @@ __global__ void *compute_wave(float *prev_base, float *next_base, float *vel_bas
         }
         __syncthreads()
         if(id==0){
-        swap= prev_base
-        prev_base=next_base
-        next_base = swap
+            swap = prev_base;
+            prev_base = next_base;
+            next_base = swap;
         }
         __syncthreads()
     }
