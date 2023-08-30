@@ -2,24 +2,12 @@
 #include <stdlib.h>
 #include <time.h>
 #include <sys/time.h>
-#include <pthread.h>
 #include <cuda_runtime.h>
 
-#define DT 0.0070710676f // delta t
-#define DX 15.0f // delta x
-#define DY 15.0f // delta y
+#define dtSquared 0.00004999999700376976f // delta t
+#define dxSquared 225.0f // delta x
+#define dySquared 225.0f // delta y
 #define V 1500.0f // wave velocity v = 1500 m/s
-
-int iterations;
-
-int rows;
-int cols;
-
-float *swap;
-
-float dxSquared;
-float dySquared;
-float dtSquared;
 
 /*
  * save the matrix on a file.txt
@@ -51,20 +39,21 @@ void save_grid(int rows, int cols, float *matrix){
 }
 
 
-__global__ void *compute_wave(float *prev_base, float *next_base, float *vel_base){
+__global__ void *compute_wave(float *prev_base, float *next_base, float *vel_base, int rows, int cols, int iterations){
 
+    float *swap;
     //thread id
-    int id = blockIdx.x;
+    int id = threadIdx.x;
 
     // calculate the chunk size
-    int chunk = rows / num_threads;
+    int chunk = rows / THREADS_PER_BLOCK;
 
     // calculate begin and end step of the thread
     int begin = id * chunk;
     int end = begin + chunk-1;
 
     // the last thread must have to end before the border
-    if (id == num_threads-1)
+    if (id == THREADS_PER_BLOCK-1)
         end = cols - 2;
 
     // the first thread must begin at after the beginning of the border
@@ -89,6 +78,13 @@ __global__ void *compute_wave(float *prev_base, float *next_base, float *vel_bas
                 next_base[current] = 2.0 * prev_base[current] - next_base[current] + value;
             }
         }
+        __syncthreads()
+        if(id==0){
+        swap= prev_base
+        prev_base=next_base
+        next_base = swap
+        }
+        __syncthreads()
     }
 }
 
@@ -102,17 +98,20 @@ int main(int argc, char* argv[]) {
         exit(-1);
     }
 
+
+
+
     // number of rows of the grid
-    rows = atoi(argv[1]);
+    int rows = atoi(argv[1]);
 
     // number of columns of the grid
-    cols = atoi(argv[2]);
+    int cols = atoi(argv[2]);
 
     // number of timesteps
     int time = atoi(argv[3]);
     
     // calc the number of iterations (timesteps)
-    iterations = (int)((time/1000.0) / DT);
+    int iterations = (int)((time/1000.0) / DT);
 
     // Cuda error
     cudaError_t syncErr, asyncErr;
@@ -171,9 +170,7 @@ int main(int argc, char* argv[]) {
 
     printf("Computing wavefield ... \n");
 
-    dxSquared = DX * DX;
-    dySquared = DY * DY;
-    dtSquared = DT * DT;
+
 
     // variable to measure execution time
     struct timeval time_start;
@@ -188,7 +185,7 @@ int main(int argc, char* argv[]) {
     cudaMemcpy(dev_vel_base, vel_base, rows * cols * sizeof(float), cudaMencpyHostToDevice);
 
     // Chamada para função na GPU
-    compute_wave<<<rows,1>>>(dev_prev_base,dev_next_base,dev_vel_base);
+    compute_wave<<<1,1024>>>(dev_prev_base,dev_next_base,dev_vel_base,rows,cols,iterations);
 
     // Sincronização de threads
     cudaDeviceSynchronize();
