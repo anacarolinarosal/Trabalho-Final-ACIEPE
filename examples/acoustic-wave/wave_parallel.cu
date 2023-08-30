@@ -18,7 +18,7 @@ void save_grid(int rows, int cols, float *matrix){
     system("mkdir -p wavefield");
 
     char file_name[64];
-    sprintf(file_name, "wavefield/wavefield_parallel15000.txt");
+    sprintf(file_name, "wavefield/wavefield.txt");
 
     // save the result
     FILE *file;
@@ -36,25 +36,25 @@ void save_grid(int rows, int cols, float *matrix){
 
     fclose(file);
     
-    system("python3 plot_parallel.py");
+    system("python3 plot.py");
 }
 
 
-__global__ void *compute_wave(float *prev_base, float *next_base, float *vel_base, int rows, int cols, int iterations){
+__global__ void compute_wave(float *prev_base, float *next_base, float *vel_base, int rows, int cols, int iterations){
 
     float *swap;
     //thread id
-    int id = threadIdx.x;
+    int id = blockIdx.x * blockDim.x + threadIdx.x;
 
     // calculate the chunk size
-    int chunk = rows / THREADS_PER_BLOCK;
+    int chunk = rows / blockDim.x;
 
     // calculate begin and end step of the thread
     int begin = id * chunk;
     int end = begin + chunk-1;
 
     // the last thread must have to end before the border
-    if (id == THREADS_PER_BLOCK-1)
+    if (id == blockDim.x-1)
         end = cols - 2;
 
     // the first thread must begin at after the beginning of the border
@@ -79,13 +79,14 @@ __global__ void *compute_wave(float *prev_base, float *next_base, float *vel_bas
                 next_base[current] = 2.0 * prev_base[current] - next_base[current] + value;
             }
         }
-        __syncthreads()
+        __syncthreads();
+        
         if(id==0){
             swap = prev_base;
             prev_base = next_base;
             next_base = swap;
         }
-        __syncthreads()
+        __syncthreads();
     }
 }
 
@@ -128,9 +129,9 @@ int main(int argc, char* argv[]) {
     cudaMalloc(&dev_vel_base, rows * cols * sizeof(float));
 
     // alocação de memória na CPU
-    float *prev_base = malloc(rows * cols * sizeof(float));
-    float *next_base = malloc(rows * cols * sizeof(float));
-    float *vel_base = malloc(rows * cols * sizeof(float));
+    float *prev_base = (float *)malloc(rows * cols * sizeof(float));
+    float *next_base = (float *)malloc(rows * cols * sizeof(float));
+    float *vel_base = (float *)malloc(rows * cols * sizeof(float));
 
     printf("Grid Sizes: %d x %d\n", rows, cols);
     printf("Iterations: %d\n", iterations);
@@ -181,9 +182,9 @@ int main(int argc, char* argv[]) {
     gettimeofday(&time_start, NULL);
 
     // Copia os arrays prev_base, next_base e vel_base para a GPU
-    cudaMemcpy(dev_prev_base, prev_base, rows * cols * sizeof(float), cudaMencpyHostToDevice);
-    cudaMemcpy(dev_next_base, next_base, rows * cols * sizeof(float), cudaMencpyHostToDevice);
-    cudaMemcpy(dev_vel_base, vel_base, rows * cols * sizeof(float), cudaMencpyHostToDevice);
+    cudaMemcpy(dev_prev_base, prev_base, rows * cols * sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemcpy(dev_next_base, next_base, rows * cols * sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemcpy(dev_vel_base, vel_base, rows * cols * sizeof(float), cudaMemcpyHostToDevice);
 
     // Chamada para função na GPU
     compute_wave<<<1,1024>>>(dev_prev_base,dev_next_base,dev_vel_base,rows,cols,iterations);
@@ -198,9 +199,9 @@ int main(int argc, char* argv[]) {
     if (asyncErr != cudaSuccess) printf("Error: %s\n", cudaGetErrorString(asyncErr));
 
     // Copia os arrays da GPU para a CPU
-    cudaMemcpy(prev_base, dev_prev_base, rows * cols * sizeof(float), cudaMencpyDeviceToHost);
-    cudaMemcpy(next_base, dev_next_base, rows * cols * sizeof(float), cudaMencpyDeviceToHost);
-    cudaMemcpy(vel_base, dev_vel_base, rows * cols * sizeof(float), cudaMencpyDeviceToHost);
+    cudaMemcpy(prev_base, dev_prev_base, rows * cols * sizeof(float), cudaMemcpyDeviceToHost);
+    cudaMemcpy(next_base, dev_next_base, rows * cols * sizeof(float), cudaMemcpyDeviceToHost);
+    cudaMemcpy(vel_base, dev_vel_base, rows * cols * sizeof(float), cudaMemcpyDeviceToHost);
 
     // get the end time
     gettimeofday(&time_end, NULL);
