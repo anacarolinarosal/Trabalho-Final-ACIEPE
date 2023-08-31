@@ -164,6 +164,6 @@ int main(int argc, char* argv[]) {
     free(prev_base);
     free(next_base);
     free(vel_base);
-
-    return 0;
+    
+    return 0;
 }
