@@ -36,7 +36,7 @@ void save_grid(int rows, int cols, float *matrix){
 
     fclose(file);
     
-    system("python3 plot.py");
+    system("python3 plot_parallel.py");
 }
 
 
@@ -116,9 +116,6 @@ int main(int argc, char* argv[]) {
     // variable to measure execution time
     struct timeval time_start;
     struct timeval time_end;
-
-    // set the number of threads
-    omp_set_num_threads(2);
     
     // get the start time
     gettimeofday(&time_start, NULL);
