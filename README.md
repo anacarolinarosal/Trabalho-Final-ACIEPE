@@ -78,7 +78,7 @@ for(int n = 0; n < iterations; n++) {
             }
         }
 ```
-  Nesse caso, foi utilizada a diretiva #pragma omp parallel for collapse(2), porque ela consegue agrupar loops aninhados em blocos de iteração maior, o que agiliza o cálculo, principalemnte para problemas de alta escala, como acontece com o problema tratado neste trabalho.
+  Nesse caso, foi utilizada a diretiva #pragma omp parallel for collapse(2), porque ela consegue agrupar loops aninhados em blocos de iteração maior, o que agiliza o cálculo, principalmente para problemas de alta escala, como acontece com o problema tratado neste trabalho.
   
 ## Análise de escalabilidade
 ### Esperada
