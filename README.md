@@ -93,6 +93,7 @@ for(int n = 0; n < iterations; n++) {
   ![image](https://github.com/anacarolinarosal/Trabalho-Final-ACIEPE/assets/136752200/6ed9f4b9-5f2b-4973-87af-15f73e8383f3)
   
   Para a matriz de dimensão 2000 x 2000, com o mesmo tempo de propagação, os resultados do tempo de execução estão no gráfico de barras abaixo:
+  
   ![image](https://github.com/anacarolinarosal/Trabalho-Final-ACIEPE/assets/136752200/0b3a32ea-9966-4503-afda-962bdee28697)
 
 ## Discussão sobre eficiência da solução
