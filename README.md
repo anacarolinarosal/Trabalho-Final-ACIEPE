@@ -89,7 +89,7 @@ for(int n = 0; n < iterations; n++) {
   Além disso, se espera que aumentar o tamanho do problema, ou seja, o tamanho da matriz a ser calculada, aumente o speedup, tendo em vista que a granularidade ficará mais grossa , portanto, o tempo de _swap_ entre tarefas não será menor do que o tempo para executar a tarefa em si, tendo em vista que o _collapse_ faz exatamente isso de aumentar o bloce trabalho a ser realizado por um thread.
   
 ### Obtida
-  O código paralelo e o sequncial foram executado 5 vezes para que se obtivesse o relutado médio dos tempos de execução e, para o caso do código paralelo, foram usadas 2, 4 e 8 threads. Os resultados dos tempos de execução para a matriz de dimensão 1000 x 1000 e tempo de propagação 5000 ms estão no gráfico de barras abaixo:
+  O código paralelo e o sequencial foram executados 5 vezes para que se obtivesse o resultado médio dos tempos de execução e, para o caso do código paralelo, foram usadas 2, 4 e 8 threads. Os resultados dos tempos de execução para a matriz de dimensão 1000 x 1000 e tempo de propagação 5000 ms estão no gráfico de barras abaixo:
   ![image](https://github.com/anacarolinarosal/Trabalho-Final-ACIEPE/assets/136752200/6ed9f4b9-5f2b-4973-87af-15f73e8383f3)
   Para a matriz de dimensão 2000 x 2000, com o mesmo tempo de propagação, os resultados do tempo de execução estão no gráfico de barras abaixo:
   ![image](https://github.com/anacarolinarosal/Trabalho-Final-ACIEPE/assets/136752200/0b3a32ea-9966-4503-afda-962bdee28697)
